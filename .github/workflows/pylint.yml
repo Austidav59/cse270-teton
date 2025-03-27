@@ -1,0 +1,33 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Runs on pushes to main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # Needed to push to gh-pages
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for deployment
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v2  # Corrected artifact upload
+        with:
+          path: teton/1.6  # Deploy only this folder
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2  # Use latest stable version
+
