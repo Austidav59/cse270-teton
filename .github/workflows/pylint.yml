@@ -1,0 +1,53 @@
+name: Pylint and Deploy
+
+on:
+  push:
+    branches:
+      - main  # Run the workflow on pushes to main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint
+
+      - name: Run Pylint
+        run: |
+          pylint $(git ls-files '*.py') || true  # Prevents workflow failure due to linting errors
+
+  deploy:
+    needs: lint  # Ensures linting runs before deploying
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # Required to push changes to gh-pages branch
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload Files to GitHub Pages
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: teton/1.6  # Deploy this folder
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v2
+
